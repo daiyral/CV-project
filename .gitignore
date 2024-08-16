@@ -1,0 +1,14 @@
+gaussian-splatting/*.pyc
+gaussian-splatting/.vscode
+gaussian-splatting/output
+gaussian-splatting/build
+gaussian-splatting/diff_rasterization/diff_rast.egg-info
+gaussian-splatting/diff_rasterization/dist
+gaussian-splatting/tensorboard_3d
+gaussian-splatting/screenshots
+splatter-image/__pycache__
+splatter-image/*/__pycache__
+splatter-image/experiments_out
+splatter-image/configs/hydra/cluster.yaml
+splatter-image/out
+srn_cars
