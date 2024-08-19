@@ -279,6 +279,11 @@ def main(cfg: DictConfig):
                 if (iteration % cfg.logging.render_log == 0 or iteration == 1) and fabric.is_global_zero:
                     wandb.log({"render": wandb.Image(image.clamp(0.0, 1.0).permute(1, 2, 0).detach().cpu().numpy())}, step=iteration)
                     wandb.log({"gt": wandb.Image(gt_image.permute(1, 2, 0).detach().cpu().numpy())}, step=iteration)
+                    wandb.log({"xyz": wandb.Image(gaussian_splat_batch['xyz'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
+                    wandb.log({"opacity": wandb.Image(gaussian_splat_batch['opacity'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
+                    # TODO: show image for RGB and Sigma
+                    #wandb.log({"xyz": wandb.Image(gaussian_splat_batch['xyz'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
+                    #wandb.log({"xyz": wandb.Image(gaussian_splat_batch['xyz'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
                 if (iteration % cfg.logging.loop_log == 0 or iteration == 1) and fabric.is_global_zero:
                     # torch.cuda.empty_cache()
                     try:

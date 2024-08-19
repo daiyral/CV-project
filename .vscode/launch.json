@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "splatter-image/train_network.py",
+            "args": [
+                "+dataset=cars",
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision 
-
+import wandb
 import numpy as np
 import torch
 from torch.nn.functional import silu
@@ -792,5 +792,6 @@ class GaussianSplatPredictor(nn.Module):
 
         out_dict = self.multi_view_union(out_dict, B, N_views)
         out_dict = self.make_contiguous(out_dict)
+
 
         return out_dict
