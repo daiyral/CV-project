@@ -67,6 +67,8 @@ def evaluate_dataset(model, dataloader, device, model_cfg, save_vis=0, out_folde
         ssim_all_renders_cond = []
         lpips_all_renders_cond = []
 
+        all_splatter = []
+
         data = {k: v.to(device) for k, v in data.items()}
 
         rot_transform_quats = data["source_cv2wT_quat"][:, :model_cfg.data.input_images]
@@ -97,6 +99,9 @@ def evaluate_dataset(model, dataloader, device, model_cfg, save_vis=0, out_folde
                                data["view_to_world_transforms"][:, :model_cfg.data.input_images, ...],
                                rot_transform_quats,
                                focals_pixels_pred)
+        
+        all_splatter.append(reconstruction) # DANNY : ADDED
+        
 
         for r_idx in range( data["gt_images"].shape[1]):
             if "focals_pixels" in data.keys():
@@ -148,6 +153,11 @@ def evaluate_dataset(model, dataloader, device, model_cfg, save_vis=0, out_folde
               "PSNR_novel": sum(psnr_all_examples_novel) / len(psnr_all_examples_novel),
               "SSIM_novel": sum(ssim_all_examples_novel) / len(ssim_all_examples_novel),
               "LPIPS_novel": sum(lpips_all_examples_novel) / len(lpips_all_examples_novel)}
+    
+    import pickle
+    #DANNY
+    with open('splatter_gt.pickle', 'wb') as handle:
+        pickle.dump(all_splatter, handle)
 
     return scores
 
@@ -281,7 +291,7 @@ def main(dataset_name, experiment_path, device_idx, split='test', save_vis=0, ou
         training_cfg.data.category = "gso"
     # instantiate dataset loader
     dataset = get_dataset(training_cfg, split)
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=False,
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=False,
                             persistent_workers=True, pin_memory=True, num_workers=1)
     
     scores = evaluate_dataset(model, dataloader, device, training_cfg, save_vis=save_vis, out_folder=out_folder)

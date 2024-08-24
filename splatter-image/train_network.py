@@ -21,6 +21,9 @@ from gaussian_renderer import render_predicted
 from scene.gaussian_predictor import GaussianSplatPredictor
 from datasets.dataset_factory import get_dataset
 
+def normalize(data):
+    return (data - data.min()) / (data.max() - data.min())
+
 
 @hydra.main(version_base=None, config_path='configs', config_name="default_config")
 def main(cfg: DictConfig):
@@ -58,6 +61,11 @@ def main(cfg: DictConfig):
 
     gaussian_predictor = GaussianSplatPredictor(cfg)
     gaussian_predictor = gaussian_predictor.to(memory_format=torch.channels_last)
+
+    # DANNY:
+    import pickle
+    with open('C:/Users/Danny/Desktop/CV-project/splatter-image/splatter_gt.pickle', 'rb') as handle:
+        splatter_gt = pickle.load(handle)
 
     l = []
     if cfg.model.network_with_offset:
@@ -279,11 +287,11 @@ def main(cfg: DictConfig):
                 if (iteration % cfg.logging.render_log == 0 or iteration == 1) and fabric.is_global_zero:
                     wandb.log({"render": wandb.Image(image.clamp(0.0, 1.0).permute(1, 2, 0).detach().cpu().numpy())}, step=iteration)
                     wandb.log({"gt": wandb.Image(gt_image.permute(1, 2, 0).detach().cpu().numpy())}, step=iteration)
-                    wandb.log({"xyz": wandb.Image(gaussian_splat_batch['xyz'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
-                    wandb.log({"opacity": wandb.Image(gaussian_splat_batch['opacity'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
+                    wandb.log({"xyz": wandb.Image(normalize(gaussian_splat_batch['xyz'].reshape(128,128,3).detach().cpu().numpy()))}, step=iteration)
+                    wandb.log({"opacity": wandb.Image(normalize(gaussian_splat_batch['opacity'].reshape(128,128,1).detach().cpu().numpy()))}, step=iteration)
+                    wandb.log({"color": wandb.Image(normalize(gaussian_splat_batch['features_dc'].reshape(128,128,3).detach().cpu().numpy()))}, step=iteration)
+                    wandb.log({"Sigma": wandb.Image(normalize(gaussian_splat_batch['scaling'].reshape(128,128,3).detach().cpu().numpy()))}, step=iteration)
                     # TODO: show image for RGB and Sigma
-                    #wandb.log({"xyz": wandb.Image(gaussian_splat_batch['xyz'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
-                    #wandb.log({"xyz": wandb.Image(gaussian_splat_batch['xyz'].reshape(128,128,3).clamp(0.0, 1.0).detach().cpu().numpy())}, step=iteration)
                 if (iteration % cfg.logging.loop_log == 0 or iteration == 1) and fabric.is_global_zero:
                     # torch.cuda.empty_cache()
                     try:
