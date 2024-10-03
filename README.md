@@ -179,6 +179,15 @@ The final splatter loss is computed as the mean loss across all **N** components
 
 This splatter loss with be added to the networks total loss calculated in train_network.py
 
+## Results
+Using our loss function, our model demonstrated an improvment in performance in terms of SSIM, PSNR, and LPIPS on novel view synthesis tasks. These improvements indicate that our model not only learns faster but also converges to the optimal solution more efficiently.
+We conducted experiments by testing various hyperparameters, regularization techniques, and loss functions (e.g., MSE, L2, L1). Additionally, we experimented with different opacity thresholds to effectively filter out certain parts of the splatted image. And many more...
+All our experimental runs have been logged to wandb [here](https://wandb.ai/radiostars/gs_pred/workspace).
+Below are some performance graphs from our most successful run. The original model is represented by the gray line, while our model using the proposed approach is shown in orange:
+![lpips](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/lpips.png)
+![psnr](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/psnr.png)
+![ssim](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/ssim.png)
+
 ## `train_network.py` Changes
 - Added the ability to log the splatter images to wandb
 - In the training configuration if useSplatterGT is enabled then we load the splatter_gt.pickle file produced from eval.py 
