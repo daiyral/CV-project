@@ -209,8 +209,9 @@ Below are some performance graphs from our most successful run. The we trained t
 ![psnr](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/psnr.png)
 ![ssim](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/ssim.png)
 
-**Note the gt we show here is from the pretrained provided model that was trained for much longer and thats why it looks much better**
 Here we can see some of the model renders:
+
+**Note the gt we show here is from the pretrained provided model that was trained for much longer and thats why it looks much better**
 ![pred](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/rot_gif.gif)
 ![pred](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/img_pred_vs_img_gt.png)
 
