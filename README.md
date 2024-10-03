@@ -95,8 +95,7 @@ colmap : https://colmap.github.io/install.html
 FFmpeg: https://www.ffmpeg.org/download.html
 ```
 
-## Running the code:
-### Data:
+## Downloading and extracting the data:
 For training / evaluating on cars dataset please download the srn_cars.zip from PixelNeRF data folder. Unzip the data file and change SHAPENET_DATASET_ROOT in datasets/srn.py to the parent folder of the unzipped folder. For example, if your folder structure is: /home/user/SRN/srn_cars/cars_train, in datasets/srn.py set SHAPENET_DATASET_ROOT="/home/user/SRN". No additional preprocessing is needed.
 
 ## Training Configuration:
@@ -110,7 +109,7 @@ The second paramater is lambda_splatter.
 This controls how much weight is given to the ground truth splatter in the loss function. The default we used is 0.5 (1 is the max where you only use the new loss function we added)
 
 You can also change the number of iterations the model trains using the iterations variable and change the image resolution for lower vram using the training_resolution variable.
-### Training:
+## Training:
 Run the following command:
 ```
 python train_network.py +dataset=cars
