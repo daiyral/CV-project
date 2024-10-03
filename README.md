@@ -9,6 +9,8 @@ In this project, our goal is to introduce a form of supervised learning by addin
 
 The objective is to train a 'weaker' model from scratch and have it converge faster while achieving comparable results to the 'stronger' standard model by leveraging the ground truth generated from the stronger model.
 
+![diagram](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/Idea%20Diagram.png)
+
 ## Installation Guide
 
 ### Step 1: Clone the Repository
@@ -179,22 +181,12 @@ The final splatter loss is computed as the mean loss across all **N** components
 
 This splatter loss with be added to the networks total loss calculated in train_network.py
 
-## Results
-Using our loss function, our model demonstrated an improvment in performance in terms of SSIM, PSNR, and LPIPS on novel view synthesis tasks. These improvements indicate that our model not only learns faster but also converges to the optimal solution more efficiently.
-We conducted experiments by testing various hyperparameters, regularization techniques, and loss functions (e.g., MSE, L2, L1). Additionally, we experimented with different opacity thresholds to effectively filter out certain parts of the splatted image. And many more...
-All our experimental runs have been logged to wandb [here](https://wandb.ai/radiostars/gs_pred/workspace).
-Below are some performance graphs from our most successful run. The original model is represented by the gray line, while our model using the proposed approach is shown in orange:
-![lpips](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/lpips.png)
-![psnr](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/psnr.png)
-![ssim](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/ssim.png)
-
 ## `train_network.py` Changes
 - Added the ability to log the splatter images to wandb
 - In the training configuration if useSplatterGT is enabled then we load the splatter_gt.pickle file produced from eval.py 
 - We calculate the splatter loss as described above
 - We multiply it by lambda_splatter which is a regularization factor that you can change in the defualt_config.yaml file
 If we define **L_prev** to be the loss value from the original paper our new loss function is:
-
 ![eq4](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/equation4.png)
 
 ### Reducing Points Based on Opacity Levels:
@@ -207,5 +199,21 @@ This preprocessing step helps the model learn from more relevant and accurate da
 
 #### With opacity=0.2:
 ![image](https://github.com/user-attachments/assets/aedbae83-29a8-435a-92db-67d313c02ac0)
+
+## Results
+Using our loss function, our model demonstrated an improvment in performance in terms of SSIM, PSNR, and LPIPS on novel view synthesis tasks. These improvements indicate that our model not only learns faster but also converges to the optimal solution more efficiently.
+We conducted experiments by testing various hyperparameters, regularization techniques, and loss functions (e.g., MSE, L2, L1). Additionally, we experimented with different opacity thresholds to effectively filter out certain parts of the splatted image. And many more...
+All our experimental runs have been logged to wandb [here](https://wandb.ai/radiostars/gs_pred/workspace).
+Below are some performance graphs from our most successful run. The we trained the original model with no additions and it is represented by the gray line, while our model using the proposed approach is shown in orange:
+![lpips](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/lpips.png)
+![psnr](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/psnr.png)
+![ssim](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/ssim.png)
+
+**Note the gt we show here is from the pretrained provided model that was trained for much longer and thats why it looks much better**
+Here we can see some of the model renders:
+![pred](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/rot_gif.gif)
+![pred](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/img_pred_vs_img_gt.png)
+
+
 
 
