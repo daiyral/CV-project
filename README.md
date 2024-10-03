@@ -180,6 +180,7 @@ The final splatter loss is computed as the mean loss across all **N** components
 This splatter loss with be added to the networks total loss calculated in train_network.py
 
 ## `train_network.py` Changes
+- Added the ability to log the splatter images to wandb
 - In the training configuration if useSplatterGT is enabled then we load the splatter_gt.pickle file produced from eval.py 
 - We calculate the splatter loss as described above
 - We multiply it by lambda_splatter which is a regularization factor that you can change in the defualt_config.yaml file
