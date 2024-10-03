@@ -154,7 +154,7 @@ The main function `splatter_image_loss` computes the total loss by taking into a
 
 This can be formulated as follows:
 - **N** be the number of images the splatter-image is composed of.
-- **network_output_k** be the output tensor for component **k**.
+- **v** be the output tensor for component **k** (the value for the component k).
 - **gt_k** be the corresponding ground truth tensor for component **k**.
 - **L_KL(x, y)** be the KL divergence loss function.
 - **L_smoothL1(x, y)** be the Smooth L1 loss function.
