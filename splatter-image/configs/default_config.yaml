@@ -10,12 +10,12 @@ general:
   num_devices: 1
   mixed_precision: false
 data:
-  training_resolution: 128 #DANNY: image height and width change for lower VRAM
+  training_resolution: 64 #image height and width change for lower VRAM
   subset: -1
   input_images: 1
   origin_distances: false
 opt:
-  iterations: 800001 # DANNY:number of epochs defualt 800001
+  iterations: 800001 # number of epochs defualt 800001 lower for shorter training
   base_lr: 0.00005
   batch_size: 8
   betas:
@@ -30,6 +30,9 @@ opt:
     beta: 0.9999
   lambda_lpips: 0.0
   pretrained_ckpt: null
+  # To use :
+  useSplatterGT: True
+  lambda_splatter: 0.5
 
 model:
   max_sh_degree: 1
@@ -53,7 +56,7 @@ model:
   base_dim: 128
   isotropic: false
 
-# DANNY: every x iteration log the data.
+#every x iteration log the data.
 logging:
   ckpt_iterations: 100
   val_log: 100

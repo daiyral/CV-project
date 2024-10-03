@@ -58,7 +58,7 @@ def evaluate_dataset(model, dataloader, device, model_cfg, save_vis=0, out_folde
     psnr_all_examples_cond = []
     ssim_all_examples_cond = []
     lpips_all_examples_cond = []
-
+    all_splatter = []
     for d_idx, data in enumerate(tqdm.tqdm(dataloader)):
         psnr_all_renders_novel = []
         ssim_all_renders_novel = []
@@ -66,8 +66,6 @@ def evaluate_dataset(model, dataloader, device, model_cfg, save_vis=0, out_folde
         psnr_all_renders_cond = []
         ssim_all_renders_cond = []
         lpips_all_renders_cond = []
-
-        all_splatter = []
 
         data = {k: v.to(device) for k, v in data.items()}
 
@@ -291,7 +289,7 @@ def main(dataset_name, experiment_path, device_idx, split='test', save_vis=0, ou
         training_cfg.data.category = "gso"
     # instantiate dataset loader
     dataset = get_dataset(training_cfg, split)
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False,
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=False,
                             persistent_workers=True, pin_memory=True, num_workers=1)
     
     scores = evaluate_dataset(model, dataloader, device, training_cfg, save_vis=save_vis, out_folder=out_folder)

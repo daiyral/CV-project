@@ -13,16 +13,41 @@ from ema_pytorch import EMA
 from omegaconf import DictConfig, OmegaConf
 
 from utils.general_utils import safe_state
-from utils.loss_utils import l1_loss, l2_loss
+from utils.loss_utils import l1_loss, l2_loss, splatter_image_loss
 import lpips as lpips_lib
 
 from eval import evaluate_dataset
 from gaussian_renderer import render_predicted
 from scene.gaussian_predictor import GaussianSplatPredictor
 from datasets.dataset_factory import get_dataset
+from PIL import Image, ImageDraw
 
 def normalize(data):
     return (data - data.min()) / (data.max() - data.min())
+
+# def plot_gaussians(splatter_image, cfg, step):
+#     image = Image.new('RGBA', (cfg.data.training_resolution, cfg.data.training_resolution), color='white')
+#     draw = ImageDraw.Draw(image)
+#     xy = splatter_image['xyz'][:, :2]
+#     scale_xy = splatter_image['scaling'][:, :2]
+#     features_dc = splatter_image['features_dc'][:, 0, :3]
+#     opacity_values = splatter_image['opacity'][:, 0]
+#     num_gaussians = xy.shape[0]
+
+#     for i in range(num_gaussians):
+#         x = xy[i, 0]
+#         y = xy[i, 1]
+#         scale_x = scale_xy[i, 0]
+#         scale_y = scale_xy[i, 1]
+#         color = tuple(int(c * 255) for c in features_dc[i])
+#         opacity = int(opacity_values[i] * 255)
+#         color_with_opacity = (color[0], color[1], color[2], opacity)
+#         draw.ellipse((x - scale_x, y - scale_y, x + scale_x, y + scale_y), fill=color_with_opacity)
+
+#     np_image = np.array(image)
+#     wandb.log({"gaussians": wandb.Image(np_image)}, step=step)
+
+    
 
 
 @hydra.main(version_base=None, config_path='configs', config_name="default_config")
@@ -63,9 +88,10 @@ def main(cfg: DictConfig):
     gaussian_predictor = gaussian_predictor.to(memory_format=torch.channels_last)
 
     # DANNY:
-    import pickle
-    with open('C:/Users/Danny/Desktop/CV-project/splatter-image/splatter_gt.pickle', 'rb') as handle:
-        splatter_gt = pickle.load(handle)
+    if cfg.opt.useSplatterGT:
+        import pickle
+        with open('C:/Users/Danny/Desktop/CV-project/splatter-image/splatter_gt.pickle', 'rb') as handle:
+            splatter_gt = pickle.load(handle)
 
     l = []
     if cfg.model.network_with_offset:
@@ -122,7 +148,8 @@ def main(cfg: DictConfig):
     if cfg.opt.lambda_lpips != 0:
         lpips_fn = fabric.to_device(lpips_lib.LPIPS(net='vgg'))
     lambda_lpips = cfg.opt.lambda_lpips
-    lambda_l12 = 1.0 - lambda_lpips
+    lambda_splatter = cfg.opt.lambda_splatter
+    lambda_l12 = 1.0 - lambda_lpips - lambda_splatter
 
     bg_color = [1, 1, 1] if cfg.data.white_background else [0, 0, 0]
     background = torch.tensor(bg_color, dtype=torch.float32)
@@ -239,13 +266,21 @@ def main(cfg: DictConfig):
             rendered_images = torch.stack(rendered_images, dim=0)
             gt_images = torch.stack(gt_images, dim=0)
             # Loss computation
-            l12_loss_sum = loss_fn(rendered_images, gt_images) 
+            l12_loss_sum = loss_fn(rendered_images, gt_images)
             if cfg.opt.lambda_lpips != 0:
                 lpips_loss_sum = torch.mean(
                     lpips_fn(rendered_images * 2 - 1, gt_images * 2 - 1),
                     )
 
             total_loss = l12_loss_sum * lambda_l12 + lpips_loss_sum * lambda_lpips
+
+            #plot_gaussians(splatter_gt[b_idx], cfg, iteration)
+
+            # DANNY: SPLATTER LOSE
+            if cfg.opt.useSplatterGT:
+                splatter_loss = splatter_image_loss(gaussian_splat_batch, splatter_gt[b_idx], cfg.data.training_resolution)
+                total_loss += splatter_loss * lambda_splatter
+
             if cfg.data.category == "hydrants" or cfg.data.category == "teddybears":
                 total_loss = total_loss + big_gaussian_reg_loss + small_gaussian_reg_loss
 
@@ -269,6 +304,8 @@ def main(cfg: DictConfig):
             with torch.no_grad():
                 if iteration % cfg.logging.loss_log == 0 and fabric.is_global_zero:
                     wandb.log({"training_loss": np.log10(total_loss.item() + 1e-8)}, step=iteration)
+                    if cfg.opt.useSplatterGT:
+                        wandb.log({"splatter_image_loss": np.log10(splatter_loss.item() + 1e-8)}, step=iteration)
                     if cfg.opt.lambda_lpips != 0:
                         wandb.log({"training_l12_loss": np.log10(l12_loss_sum.item() + 1e-8)}, step=iteration)
                         wandb.log({"training_lpips_loss": np.log10(lpips_loss_sum.item() + 1e-8)}, step=iteration)
@@ -287,11 +324,11 @@ def main(cfg: DictConfig):
                 if (iteration % cfg.logging.render_log == 0 or iteration == 1) and fabric.is_global_zero:
                     wandb.log({"render": wandb.Image(image.clamp(0.0, 1.0).permute(1, 2, 0).detach().cpu().numpy())}, step=iteration)
                     wandb.log({"gt": wandb.Image(gt_image.permute(1, 2, 0).detach().cpu().numpy())}, step=iteration)
-                    wandb.log({"xyz": wandb.Image(normalize(gaussian_splat_batch['xyz'].reshape(128,128,3).detach().cpu().numpy()))}, step=iteration)
-                    wandb.log({"opacity": wandb.Image(normalize(gaussian_splat_batch['opacity'].reshape(128,128,1).detach().cpu().numpy()))}, step=iteration)
-                    wandb.log({"color": wandb.Image(normalize(gaussian_splat_batch['features_dc'].reshape(128,128,3).detach().cpu().numpy()))}, step=iteration)
-                    wandb.log({"Sigma": wandb.Image(normalize(gaussian_splat_batch['scaling'].reshape(128,128,3).detach().cpu().numpy()))}, step=iteration)
-                    # TODO: show image for RGB and Sigma
+                    wandb.log({"xyz": wandb.Image(normalize(gaussian_splat_batch['xyz'].reshape(cfg.data.training_resolution,cfg.data.training_resolution,3).detach().cpu().numpy()))}, step=iteration)
+                    wandb.log({"opacity": wandb.Image(normalize(gaussian_splat_batch['opacity'].reshape(cfg.data.training_resolution,cfg.data.training_resolution,1).detach().cpu().numpy()))}, step=iteration)
+                    wandb.log({"color": wandb.Image(normalize(gaussian_splat_batch['features_dc'].reshape(cfg.data.training_resolution,cfg.data.training_resolution,3).detach().cpu().numpy()))}, step=iteration)
+                    wandb.log({"Sigma": wandb.Image(normalize(gaussian_splat_batch['scaling'].reshape(cfg.data.training_resolution,cfg.data.training_resolution,3).detach().cpu().numpy()))}, step=iteration)
+                    #plot_gaussians(splatter_image=gaussian_splat_batch,cfg=cfg,step=iteration)
                 if (iteration % cfg.logging.loop_log == 0 or iteration == 1) and fabric.is_global_zero:
                     # torch.cuda.empty_cache()
                     try:
