@@ -158,24 +158,28 @@ This can be formulated as follows:
 - **gt_k** be the corresponding ground truth tensor for component **k**.
 - **L_KL(x, y)** be the KL divergence loss function.
 - **L_smoothL1(x, y)** be the Smooth L1 loss function.
-- **v_m = (1/n) * sum(|v_i|)** be the mean magnitude of the values in **v**.
+- ![eq1](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/equation1.png) - the mean magnitude of the values in **v** for component **k**.
 
 The total loss for each component **k** is a combination of the Smooth L1 loss and the KL divergence loss, scaled by the magnitude of **v**:
 
-\[
-L_k = v_m \left( 0.1 \cdot L_{\text{smoothL1}}(v_k, gt_k') + 0.9 \cdot L_{KL}(v_k, gt_k') \right)
-\]
+![eq2](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/equation2.png)
 
-Where:
-- **v_k** represents the model's prediction for component **k**.
-- **gt_k'** represents the ground truth for component **k**, downsampled to the training resolution (if applicable).
-- The terms are weighted with **0.1** for Smooth L1 loss and **0.9** for KL divergence.
+The terms are weighted with **alpha** for Smooth L1 loss and **beta** for KL divergence. **We used 0.1 and 0.9 respectively for the best results but can be any number**
 
-The final total loss is computed as the mean loss across all **N** components:
+The final splatter loss is computed as the mean loss across all **N** components:
 
-\[
-L_{\text{total}} = \frac{1}{N} \sum_{k=1}^{N} L_k
-\]
+![eq3](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/equation3.png)
+
+This splatter loss with be added to the networks total loss calculated in train_network.py
+
+## `train_network.py` Changes
+- In the training configuration if useSplatterGT is enabled then we load the splatter_gt.pickle file produced from eval.py 
+- We calculate the splatter loss as described above
+- We multiply it by lambda_splatter which is a regularization factor that you can change in the defualt_config.yaml file
+If we define **L_prev** to be the loss value from the original paper our new loss function is:
+
+![eq4](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/equation4.png)
+
 ### Reducing Points Based on Opacity Levels:
 Since the object (a car) contrasts with the white background, we can filter out points with low opacity that likely belong to the background.
 By eliminating these outliers, we focus on higher-quality data that better represents the object.
