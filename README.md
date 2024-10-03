@@ -102,7 +102,7 @@ For training / evaluating on cars dataset please download the srn_cars.zip from 
 To activate our additions to the project go to default_config.yaml
 ```
 Make sure useSplatterGT Variable is set to True
-And 0<lambda_spaltter<=1
+And 0 < lambda_spaltter <= 1
 ```
 This activates the supervised learning using ground truth splatter image.
 The second paramater is lambda_splatter.
@@ -110,6 +110,13 @@ This controls how much weight is given to the ground truth splatter in the loss 
 
 You can also change the number of iterations the model trains using the iterations variable and change the image resolution for lower vram using the training_resolution variable.
 ## Training:
+First you must produce the splatter gt locally:
+Run the following command :
+```
+python eval.py cars
+```
+once the eval is finished you should see a file named splatter_gt.pickle generated in splatter-image directory.
+Now to train a new network with the ground truth supervision:
 Run the following command:
 ```
 python train_network.py +dataset=cars
