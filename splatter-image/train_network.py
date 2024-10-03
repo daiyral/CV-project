@@ -90,7 +90,10 @@ def main(cfg: DictConfig):
     # DANNY:
     if cfg.opt.useSplatterGT:
         import pickle
-        with open('C:/Users/Danny/Desktop/CV-project/splatter-image/splatter_gt.pickle', 'rb') as handle:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        relative_path = os.path.join(script_dir, '../../../../splatter-image/splatter_gt.pickle')
+        relative_path = os.path.abspath(relative_path) 
+        with open(relative_path, 'rb') as handle:
             splatter_gt = pickle.load(handle)
 
     l = []
@@ -194,8 +197,7 @@ def main(cfg: DictConfig):
     first_iter += 1
     iteration = first_iter
 
-    for num_epoch in range((cfg.opt.iterations + 1 - first_iter)// len(dataloader) + 1):
-        #dataloader.sampler.set_epoch(num_epoch) DANNY: removed this line       
+    for num_epoch in range((cfg.opt.iterations + 1 - first_iter)// len(dataloader) + 1):    
 
         for data in dataloader:
             iteration += 1
