@@ -193,12 +193,60 @@ If we define **L_prev** to be the loss value from the original paper our new los
 Since the object (a car) contrasts with the white background, we can filter out points with low opacity that likely belong to the background.
 By eliminating these outliers, we focus on higher-quality data that better represents the object.
 This preprocessing step helps the model learn from more relevant and accurate data, improving its overall performance.
+As you can see from the images above, increasing the opacity threshold from 0 to 0.2 significantly reduces the number of background points, resulting in a cleaner representation of the car object. 
 
-#### With opacity=0:
+#### Visual Comparison:
+
+##### With opacity=0:
 ![image](https://github.com/user-attachments/assets/669d3d1d-aa0c-4d55-aff5-b60aabecaf6c)
 
-#### With opacity=0.2:
+##### With opacity=0.2:
 ![image](https://github.com/user-attachments/assets/aedbae83-29a8-435a-92db-67d313c02ac0)
+
+#### Part 1: Visualization
+##### How to run?
+1. To run the code, you need to have the following Python libraries installed:
+```bash
+pip install torch numpy plotly dash
+```
+
+2. Name your pickle file 'splatter_gt.pickle' and save it in the same location as the Python script.
+
+3. Run the Python script:
+```bash
+python opacity_control.py
+```
+  This will start a Dash web app on http://127.0.0.1:8050/ by default.
+
+ 4. Using the web interface:
+    * Open a web browser and go to http://127.0.0.1:8050/.
+    * You will see a 3D scatter plot of the sampled points from the pickle file.
+    * Use the opacity slider to adjust the opacity threshold, dynamically filtering the points displayed.
+  
+  ##### Customization
+  * Change the opacity threshold: Modify the default opacity threshold in the slider by adjusting the value parameter in the dcc.Slider component.
+  * Sample size: The number of points displayed can be adjusted by changing the sample_size parameter in the sample_points() function.
+  
+#### Part 2: Easy Access with get_filtered_points_with_opacity
+The get_filtered_points_with_opacity() function provides easy access to filtered point cloud data based on opacity thresholds. This function is crucial for processing the point cloud data and can be used independently of the visualization interface.
+
+##### How to run?
+1. To run the code, you need to have the following Python libraries installed:
+```bash
+pip install torch numpy
+```
+
+2. Import the function:
+   ```python
+   from your_module import get_filtered_points_with_opacity
+   ```
+   
+3. Call the function:
+   ```python
+   x_sample, y_sample, z_sample = get_filtered_points_with_opacity(image, opacity_threshold=0.2, sample_size=10000)
+   ```
+
+
 
 ## Results
 Using our loss function, our model demonstrated an improvment in performance in terms of SSIM, PSNR, and LPIPS on novel view synthesis tasks. These improvements indicate that our model not only learns faster but also converges to the optimal solution more efficiently.
