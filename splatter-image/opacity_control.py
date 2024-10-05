@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import torch
-import plotly.graph_objects as go
+
 
 
 # Function to load the image from a pickle file
@@ -79,6 +79,7 @@ def filter_by_opacity(image, opacity_threshold=0.1):
 
 
 def visualize_3d_points(x_sample, y_sample, z_sample):
+    import plotly.graph_objects as go
     # Create a 3D scatter plot with the sampled points
     fig = go.Figure(data=[go.Scatter3d(
         x=x_sample,
@@ -140,30 +141,89 @@ def get_filtered_points_with_opacity(image, opacity_threshold=0.2, sample_size=1
     else:
         return None, None, None
 
+# Function to create the Dash app
+def create_dash_app(x_sample, y_sample, z_sample):
+    import plotly.graph_objects as go
+    from dash import Dash, dcc, html
+    from dash.dependencies import Input, Output
+    # Create a new Dash app
+    app = Dash(__name__)
 
-def main():
-    # Load the image from a pickle file
-    pickle_file_path = 'C:/Users/Danny/Desktop/CV-project/splatter-image/splatter_gt.pickle'  # Replace with your pickle file path
-    image = load_image_from_pickle(pickle_file_path)
+    # Layout of the Dash app
+    app.layout = html.Div([
+        dcc.Graph(id='3d-scatter-plot'),
+        html.Label("Opacity:"),
+        dcc.Slider(
+            id='opacity-slider',
+            min=0,
+            max=0.5,
+            step=0.05,
+            value=0.1,  # Default opacity value
+        )
+    ])
 
-    xyz_list = filter_by_opacity(image, opacity_threshold=0.2)
+    # Define the callback to update the graph based on the slider value
+    @app.callback(
+        Output('3d-scatter-plot', 'figure'),
+        Input('opacity-slider', 'value')
+    )
+    def update_figure(opacity_value):
+        global image
+        xyz_list = filter_by_opacity(image, opacity_threshold=opacity_value)
 
-    # Combine all xyz data into a single NumPy array
-    xyz_combined = np.vstack(xyz_list)  # Stack all xyz arrays vertically
+        # Combine all xyz data into a single NumPy array
+        xyz_combined = np.vstack(xyz_list)  # Stack all xyz arrays vertically
 
-    # Now xyz_combined contains all the 3D points for visualization
-    print(xyz_combined)
-
-    xyz_combined_flattened = xyz_combined.reshape(-1, 3)  # (11534336, 3)
-
-    # If xyz_combined is not empty, proceed to visualization
-    if xyz_combined.size > 0:
+        # Flatten xyz_combined for easier sampling and visualization
+        xyz_combined_flattened = xyz_combined.reshape(-1, 3)
 
         # Sample a smaller number of points for visualization
         x_sample, y_sample, z_sample = sample_points(xyz_combined_flattened, sample_size=10000)
 
-        # Visualize the sampled 3D points
-        visualize_3d_points(x_sample, y_sample, z_sample)
+        # Create a 3D scatter plot with adjustable opacity
+        fig = go.Figure(data=[go.Scatter3d(
+            x=x_sample,
+            y=y_sample,
+            z=z_sample,
+            mode='markers',
+            marker=dict(size=2, color='blue')  # Apply opacity
+        )])
+
+        # Set axis labels and title
+        fig.update_layout(
+            scene=dict(
+                xaxis_title='X Axis',
+                yaxis_title='Y Axis',
+                zaxis_title='Z Axis'
+            ),
+            title='3D Point Cloud Visualization with Opacity Control'
+        )
+        return fig
+
+    return app
+
+
+image = None
+def main():
+    global image
+    # Load the image from a pickle file
+    pickle_file_path = 'splatter_gt.pickle'  # Replace with your pickle file path
+    image = load_image_from_pickle(pickle_file_path)
+
+    xyz_list = filter_by_opacity(image, opacity_threshold=0.1)
+
+    # Combine all xyz data into a single NumPy array
+    xyz_combined = np.vstack(xyz_list)  # Stack all xyz arrays vertically
+
+    # Flatten xyz_combined for easier sampling and visualization
+    xyz_combined_flattened = xyz_combined.reshape(-1, 3)
+
+    # Sample a smaller number of points for visualization
+    x_sample, y_sample, z_sample = sample_points(xyz_combined_flattened, sample_size=10000)
+
+    # Create and run the Dash app
+    app = create_dash_app(x_sample, y_sample, z_sample)
+    app.run_server(debug=True)
 
 
 if __name__ == "__main__":

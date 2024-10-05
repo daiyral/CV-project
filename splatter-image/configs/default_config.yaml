@@ -30,9 +30,9 @@ opt:
     beta: 0.9999
   lambda_lpips: 0.0
   pretrained_ckpt: null
-  # To use :
+  # To use project with splatter loss:
   useSplatterGT: True
-  lambda_splatter: 0.5
+  lambda_splatter: 0.3
 
 model:
   max_sh_degree: 1

@@ -53,13 +53,14 @@ def filter_by_opacity(image_dict, std_factor=1.0):
     opacity_std = opacity.std()
     opacity_threshold = opacity_mean + std_factor * opacity_std
 
-    opacity_threshold = max(0.1, opacity_threshold)
+    #opacity_threshold = max(0.1, opacity_threshold)
+    opacity_threshold = 0.2
 
     mask = opacity > opacity_threshold
     mask = mask.unsqueeze(-1) 
 
     for k, v in image_dict.items():
-        if k == 'xyz':
+        if k == 'xyz' or k == 'features_dc' or k == 'opacity' or k == 'scaling':
             filtered_v = (v.view(-1, v.shape[-1]) * mask).view(v.shape)
             filtered_dict[k] = filtered_v
         else:
@@ -72,7 +73,7 @@ def filter_by_opacity(image_dict, std_factor=1.0):
 
 def splatter_image_loss(network_output, gt, training_resolution):
     loss_total = 0
-    #gt_filtered = filter_by_opacity(gt)
+    gt_filtered = filter_by_opacity(gt)
     #network_output = filter_by_opacity(network_output)
     gt_filtered = gt
     for k, v in network_output.items():
