@@ -1,4 +1,3 @@
-![image](https://github.com/user-attachments/assets/943931c3-711b-4fe2-8b17-3348860ab3c9)# CV-project
 Authors:
 - Daniel Aibinder
 - Noy Cohen
