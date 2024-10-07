@@ -25,30 +25,6 @@ from PIL import Image, ImageDraw
 def normalize(data):
     return (data - data.min()) / (data.max() - data.min())
 
-# def plot_gaussians(splatter_image, cfg, step):
-#     image = Image.new('RGBA', (cfg.data.training_resolution, cfg.data.training_resolution), color='white')
-#     draw = ImageDraw.Draw(image)
-#     xy = splatter_image['xyz'][:, :2]
-#     scale_xy = splatter_image['scaling'][:, :2]
-#     features_dc = splatter_image['features_dc'][:, 0, :3]
-#     opacity_values = splatter_image['opacity'][:, 0]
-#     num_gaussians = xy.shape[0]
-
-#     for i in range(num_gaussians):
-#         x = xy[i, 0]
-#         y = xy[i, 1]
-#         scale_x = scale_xy[i, 0]
-#         scale_y = scale_xy[i, 1]
-#         color = tuple(int(c * 255) for c in features_dc[i])
-#         opacity = int(opacity_values[i] * 255)
-#         color_with_opacity = (color[0], color[1], color[2], opacity)
-#         draw.ellipse((x - scale_x, y - scale_y, x + scale_x, y + scale_y), fill=color_with_opacity)
-
-#     np_image = np.array(image)
-#     wandb.log({"gaussians": wandb.Image(np_image)}, step=step)
-
-    
-
 
 @hydra.main(version_base=None, config_path='configs', config_name="default_config")
 def main(cfg: DictConfig):
@@ -275,8 +251,6 @@ def main(cfg: DictConfig):
                     )
 
             total_loss = l12_loss_sum * lambda_l12 + lpips_loss_sum * lambda_lpips
-
-            #plot_gaussians(splatter_gt[b_idx], cfg, iteration)
 
             # DANNY: SPLATTER LOSE
             if cfg.opt.useSplatterGT:

@@ -23,11 +23,26 @@ def l2_loss(network_output, gt):
 
 
 def normalize_to_distribution(tensor):
+     """
+    Normalizes the input tensor into a probability distribution using softmax.
+    Parameters:
+    tensor: Input tensor 
+    Returns:
+    tensor: Tensor normalized along the second dimension to form a probability distribution.
+    """
     flat_tensor = tensor.view(tensor.shape[0], -1)  # (batch_size, num_pixels)
     normalized_tensor = F.softmax(flat_tensor, dim=1)
     return normalized_tensor.view(tensor.shape) 
 
 def kl_divergence_loss(output, gt):
+    """
+    Computes the KL Divergence loss between the predicted output and ground truth tensors.
+    Parameters:
+    output (tensor): The output tensor from the network.
+    gt (tensor): The ground truth tensor.
+    Returns:
+    tensor: The KL Divergence loss between the normalized output and ground truth.
+    """
     output_prob = normalize_to_distribution(output)
     gt_prob = normalize_to_distribution(gt)
     log_output_prob = torch.log(output_prob) 
@@ -36,6 +51,16 @@ def kl_divergence_loss(output, gt):
 
 
 def down_scale_splatter(splatter, k ,v, resolution):
+    """
+    Downscales the splatter image from a high resolution to the target resolution using bilinear interpolation.
+    Parameters:
+    splatter (dict): A dictionary of splattered image components.
+    k (str): The key representing the specific image component to downscale.
+    v (torch.Tensor): The current image tensor.
+    resolution (int): The target resolution for downscaling.
+    Returns:
+    tensor: Reshaped and downscaled tensor for the given image component.
+    """
     gt_reshped = splatter[k][0].view(128, 128, splatter[k][0].shape[-1]).permute(2, 0, 1).unsqueeze(0)
     gt_reshped = F.interpolate(gt_reshped, size=(resolution, resolution), mode='bilinear')
     gt_reshped = gt_reshped.squeeze(0).permute(1, 2, 0)
@@ -46,21 +71,22 @@ def down_scale_splatter(splatter, k ,v, resolution):
 
     return gt_reshped
 
-def filter_by_opacity(image_dict, std_factor=1.0):
+def filter_by_opacity(image_dict):
+    """
+    Filters the image dictionary by removing low-opacity pixels.
+    Parameters:
+    image_dict (dict): A dictionary containing image components, including 'opacity' for masking.
+    Returns:
+    dict: A new image dictionary with xyz filtered by opacity.
+    """
     filtered_dict = {}
     opacity = image_dict['opacity'].flatten()
-    opacity_mean = opacity.mean()
-    opacity_std = opacity.std()
-    opacity_threshold = opacity_mean + std_factor * opacity_std
-
-    #opacity_threshold = max(0.1, opacity_threshold)
-    opacity_threshold = 0.2
-
+    opacity_threshold = 0.1
     mask = opacity > opacity_threshold
     mask = mask.unsqueeze(-1) 
 
     for k, v in image_dict.items():
-        if k == 'xyz' or k == 'features_dc' or k == 'opacity' or k == 'scaling':
+        if k == 'xyz':
             filtered_v = (v.view(-1, v.shape[-1]) * mask).view(v.shape)
             filtered_dict[k] = filtered_v
         else:
@@ -70,12 +96,18 @@ def filter_by_opacity(image_dict, std_factor=1.0):
 
 
 
-
 def splatter_image_loss(network_output, gt, training_resolution):
+    """
+    Calculates the total loss for splatter images using a combination of Smooth L1 loss and KL divergence loss.
+    Parameters:
+    network_output (dict): The output dictionary from the neural network containing predicted image components.
+    gt (dict): The ground truth dictionary of image components.
+    training_resolution (int): The resolution for which the images are trained.
+    Returns:
+    tensor: The total computed loss, averaged over all image components.
+    """
     loss_total = 0
     gt_filtered = filter_by_opacity(gt)
-    #network_output = filter_by_opacity(network_output)
-    gt_filtered = gt
     for k, v in network_output.items():
         if k != 'features_rest' and k != 'rotation':
             if training_resolution == 64:
@@ -84,12 +116,11 @@ def splatter_image_loss(network_output, gt, training_resolution):
                 # dont need to downscale for 128 resolution
                 gt_reshped = gt_filtered[k][0]
             loss = F.smooth_l1_loss(v, gt_reshped)
-            #loss = l2_loss(v, gt_reshped)
             kl_loss_value = kl_divergence_loss(v, gt_reshped)
             v_magnitude = torch.mean(torch.abs(v)) + 1e-8
             loss_total += (0.1 * loss + 0.9* kl_loss_value)/v_magnitude
 
-    return loss_total / (len(network_output) - 2)   # Average loss over all splatters (best run no minus 2)
+    return loss_total / (len(network_output) - 2) 
 
 def gaussian(window_size, sigma):
     gauss = torch.Tensor([exp(-(x - window_size // 2) ** 2 / float(2 * sigma ** 2)) for x in range(window_size)])
