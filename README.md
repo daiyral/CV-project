@@ -1,5 +1,4 @@
-# CV-project
-Authors:
+## Authors:
 - Daniel Aibinder
 - Noy Cohen
   
@@ -189,7 +188,7 @@ This splatter loss with be added to the networks total loss calculated in train_
 If we define **L_prev** to be the loss value from the original paper our new loss function is:
 ![eq4](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/equation4.png)
 
-### Reducing Points Based on Opacity Levels:
+## Reducing Points Based on Opacity Levels:
 Since the object (a car) contrasts with the white background, we can filter out points with low opacity that likely belong to the background.
 By eliminating these outliers, we focus on higher-quality data that better represents the object.
 This preprocessing step helps the model learn from more relevant and accurate data, improving its overall performance.
@@ -246,12 +245,21 @@ pip install torch numpy
    x_sample, y_sample, z_sample = get_filtered_points_with_opacity(image, opacity_threshold=0.2, sample_size=10000)
    ```
 
-
-
-## Results
+## Experiments
 Using our loss function, our model demonstrated an improvment in performance in terms of SSIM, PSNR, and LPIPS on novel view synthesis tasks. These improvements indicate that our model not only learns faster but also converges to the optimal solution more efficiently.
 We conducted experiments by testing various hyperparameters, regularization techniques, and loss functions (e.g., MSE, L2, L1). Additionally, we experimented with different opacity thresholds to effectively filter out certain parts of the splatted image. And many more...
-All our experimental runs have been logged to wandb [here](https://wandb.ai/radiostars/gs_pred/workspace).
+
+[Here](https://wandb.ai/radiostars/gs_pred/workspace) you can see some of the runs we attempted:
+
+![runs](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/runs.png)
+
+Wandb logs allowed us to test different loss functions and different paramaters to improve our model.
+
+Here for example, you can see how we compared mse(orange) with smooth_l1(green) with a combination of ssim and regular l1(brown) with kl loss with different values for the lambdas. This gave us an indication that kl loss gave the best results as it gave the best psnr, lpips and ssim results.
+
+![comapre](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/compare.png)
+
+## Results
 Below are some performance graphs from our most successful run. The we trained the original model with no additions and it is represented by the gray line, while our model using the proposed approach is shown in orange:
 ![lpips](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/lpips.png)
 ![psnr](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/psnr.png)
