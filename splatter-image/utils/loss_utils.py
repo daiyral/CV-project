@@ -23,7 +23,7 @@ def l2_loss(network_output, gt):
 
 
 def normalize_to_distribution(tensor):
-     """
+    """
     Normalizes the input tensor into a probability distribution using softmax.
     Parameters:
     tensor: Input tensor 
