@@ -107,7 +107,7 @@ And 0 < lambda_spaltter <= 1
 ```
 This activates the supervised learning using ground truth splatter image.
 The second paramater is lambda_splatter.
-This controls how much weight is given to the ground truth splatter in the loss function. The default we used is 0.5 (1 is the max where you only use the new loss function we added)
+This controls how much weight is given to the ground truth splatter in the loss function. The default we used is 0.3 (1 is the max where you only use the new loss function we added)
 
 You can also change the number of iterations the model trains using the iterations variable and change the image resolution for lower vram using the training_resolution variable.
 ## Training:
@@ -249,7 +249,7 @@ pip install torch numpy
 Using our loss function, our model demonstrated an improvment in performance in terms of SSIM, PSNR, and LPIPS on novel view synthesis tasks. These improvements indicate that our model not only learns faster but also converges to the optimal solution more efficiently.
 We conducted experiments by testing various hyperparameters, regularization techniques, and loss functions (e.g., MSE, L2, L1). Additionally, we experimented with different opacity thresholds to effectively filter out certain parts of the splatted image. And many more...
 
-[Here](https://wandb.ai/radiostars/gs_pred/workspace) you can see some of the runs we attempted:
+[Here](https://wandb.ai/radiostars/gs_pred/workspace) you can see some of the runs we attempted our last run is called "best_run_final_0.3_lambda_splatter":
 
 ![runs](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/runs.png)
 
@@ -264,9 +264,14 @@ Below are some performance graphs from our most successful run. The we trained t
 ![lpips](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/lpips.png)
 ![psnr](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/psnr.png)
 ![ssim](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/ssim.png)
+![loss](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/loss.png)
 
-Here we can see some of the model renders:
+Here you can see renders of our trained model the model was trained for 1 day and 9 hours for 31k iterations:
 
+![pred1](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/rot-gif2.gif)
+![pred2](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/render.png)
+
+Here we can see some of the model renders compared to the ground truth:
 **Note the gt we show here is from the pretrained provided model that was trained for much longer and thats why it looks much better**
 ![pred](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/rot_gif.gif)
 ![pred](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/img_pred_vs_img_gt.png)
