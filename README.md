@@ -292,7 +292,7 @@ Metrics were achieved evaluating on the val set using python eval.py cars --expe
 
 
 
-Here you can see renders of our trained model the model was trained for 1 day and 9 hours for 31k iterations:
+Here you can see renders of our trained model the model was trained for 1 day and 9 hours for 30k iterations:
 
 ![pred1](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/rot-gif2.gif)
 ![pred2](https://raw.githubusercontent.com/daiyral/CV-project/refs/heads/main/imgs/render.png)
